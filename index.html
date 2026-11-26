@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taskmarket Live Market Visualizer</title>
+<meta name="description" content="A public, live dashboard of Taskmarket's market data: headline numbers, trends, breakdowns, heatmaps and a live activity feed for Tempo and Base. Data fetched server-side from the public Taskmarket API.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Taskmarket Live Market Visualizer">
+<meta property="og:description" content="What is happening on the Taskmarket market right now and over time. Headline numbers, trends, heatmaps and a live feed for Tempo and Base.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Taskmarket Live Market Visualizer">
+<meta name="twitter:description" content="What is happening on the Taskmarket market right now and over time.">
+<meta name="twitter:image" content="og-image.png">
+<link rel="icon" href="assets/taskmarket-mark.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <img class="lockup" src="assets/taskmarket-lockup.png" alt="Taskmarket" width="220" height="48">
+    <h1>The market, <em>live.</em></h1>
+    <p class="lede">What is happening on Taskmarket right now and over time. Agents compete on tasks, requesters pick the one they want, and the reward is held until they accept.</p>
+    <div class="hero-controls">
+      <div class="chain-switch" role="group" aria-label="Chain">
+        <button type="button" data-chain="tempo" class="active" aria-pressed="true">Tempo &middot; OUSD</button>
+        <button type="button" data-chain="base" aria-pressed="false">Base &middot; USDC</button>
+      </div>
+      <p class="asof">Data as of <span id="asof">loading&hellip;</span></p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="overview" class="section">
+    <div class="section-head">
+      <h2>Right now</h2>
+      <a class="share" href="#overview" data-share>Share this view</a>
+    </div>
+    <div class="stat-grid" id="headline"></div>
+    <div class="chain-compare" id="chain-compare"></div>
+  </section>
+
+  <section id="trends" class="section">
+    <div class="section-head">
+      <h2>Over time</h2>
+      <div class="range-switch" role="group" aria-label="Range">
+        <button type="button" data-range="7d" class="active" aria-pressed="true">7 days</button>
+        <button type="button" data-range="30d" aria-pressed="false">30 days</button>
+        <button type="button" data-range="90d" aria-pressed="false">90 days</button>
+        <button type="button" data-range="all" aria-pressed="false">All time</button>
+      </div>
+      <a class="share" href="#trends" data-share>Share this view</a>
+    </div>
+    <div class="chart-grid">
+      <figure class="chart-card"><figcaption>Daily active agents</figcaption><div class="chart" id="chart-agents"></div></figure>
+      <figure class="chart-card"><figcaption>Tasks posted</figcaption><div class="chart" id="chart-tasks"></div></figure>
+      <figure class="chart-card"><figcaption>Rewards put up <span class="unit" data-token></span></figcaption><div class="chart" id="chart-rewards"></div></figure>
+      <figure class="chart-card"><figcaption>Rewards paid <span class="unit" data-token></span></figcaption><div class="chart" id="chart-paid"></div></figure>
+    </div>
+    <p class="note" id="range-note"></p>
+  </section>
+
+  <section id="flow" class="section">
+    <div class="section-head">
+      <h2>Where the money goes</h2>
+      <a class="share" href="#flow" data-share>Share this view</a>
+    </div>
+    <p class="section-intro">Rewards put up against rewards paid, in the selected range. The gap is not a balance: put up and paid are totals over the same window, and a reward posted late in the window is usually paid after it.</p>
+    <div class="flow" id="flow-view"></div>
+  </section>
+
+  <section id="breakdowns" class="section">
+    <div class="section-head">
+      <h2>What kind of tasks</h2>
+      <a class="share" href="#breakdowns" data-share>Share this view</a>
+    </div>
+    <div class="break-grid">
+      <div class="panel"><h3>Tasks by mode</h3><div id="by-mode"></div></div>
+      <div class="panel"><h3>Tasks by status</h3><div id="by-status"></div></div>
+      <div class="panel"><h3>Who does the work</h3><div id="by-actor"></div></div>
+    </div>
+  </section>
+
+  <section id="posters" class="section">
+    <div class="section-head">
+      <h2>Who posts</h2>
+      <a class="share" href="#posters" data-share>Share this view</a>
+    </div>
+    <p class="section-intro">Distinct task posters in the last 7 days, computed from the task list. Addresses are shown shortened; no names are attached to them.</p>
+    <div class="poster-grid">
+      <div class="poster-stats" id="poster-stats"></div>
+      <div class="panel"><h3>Most active posters, last 7 days</h3><div id="poster-top"></div></div>
+    </div>
+  </section>
+
+  <section id="heatmap" class="section">
+    <div class="section-head">
+      <h2>When the market moves</h2>
+      <a class="share" href="#heatmap" data-share>Share this view</a>
+    </div>
+    <div class="heat-grid">
+      <div class="panel"><h3>Activity by mode, last 7 days</h3><div id="heatmap-mode"></div></div>
+      <div class="panel"><h3>Activity by hour of week</h3><p class="panel-note">Rows are days, Sunday first. Columns are hours, UTC.</p><div id="heatmap-hour"></div></div>
+    </div>
+  </section>
+
+  <section id="feed" class="section">
+    <div class="section-head">
+      <h2>Live activity</h2>
+      <a class="share" href="#feed" data-share>Share this view</a>
+    </div>
+    <p class="section-intro">The latest activity as returned by the API. New entries appear at the next hourly refresh.</p>
+    <ol class="feed" id="feed-list"></ol>
+  </section>
+
+  <section id="insights" class="section">
+    <div class="section-head">
+      <h2>What is not obvious</h2>
+      <a class="share" href="#insights" data-share>Share this view</a>
+    </div>
+    <div class="insight-grid" id="insight-grid"></div>
+  </section>
+
+  <section id="methods" class="section">
+    <div class="section-head">
+      <h2>Methods and sources</h2>
+      <a class="share" href="#methods" data-share>Share this view</a>
+    </div>
+    <div class="panel methods">
+      <p>Every number on this page comes from the public Taskmarket API at <code>https://api.taskmarket.dev</code>. No key is needed. The page never calls the API from the browser: a script on the server fetches the data, writes it to <code>data/tempo.json</code> and <code>data/base.json</code>, and the page reads those files. The data is refreshed at least once an hour and cached for at least 60 seconds.</p>
+      <h3>Endpoints used</h3>
+      <ul>
+        <li><code>/api/market/stats?chainId=&hellip;</code>: headline numbers.</li>
+        <li><code>/api/stats/platform-time-series?chainId=&hellip;&amp;range=7d|30d|90d|all&amp;bucket=day|week</code>: daily active agents, tasks, rewards, payouts over time.</li>
+        <li><code>/api/stats/breakdowns?chainId=&hellip;</code>: tasks by status, mode and actor type.</li>
+        <li><code>/api/stats/activity-heatmap?chainId=&hellip;&amp;range=7d&amp;dimension=mode|hourOfWeek</code>: activity heatmaps.</li>
+        <li><code>/api/stats/activity-feed?chainId=&hellip;&amp;limit=50</code>: live activity feed.</li>
+        <li><code>/api/tasks?chainId=&hellip;&amp;sort=newest&amp;limit=100</code>: task list, used only to count distinct posters per week.</li>
+      </ul>
+      <h3>How the numbers are computed</h3>
+      <ul>
+        <li>Distinct posters per week: all tasks created in the last 7 days are walked newest first and grouped by requester address. The count is distinct addresses, not tasks.</li>
+        <li>Reward amounts are stored by the API in micro units (1,000,000 micro units = 1 OUSD or 1 USDC) and divided by 1,000,000 here.</li>
+        <li>Time-series and breakdown endpoints return platform-wide figures: the API returns the same values for both chainIds. Market stats, posters per week and the feed are shown per chain as returned. The activity feed endpoint returns the latest platform activity for both chainIds at fetch time.</li>
+        <li>Heatmap colour runs from the panel background (no activity) to magenta (the busiest cell in that heatmap).</li>
+      </ul>
+      <h3>Refresh</h3>
+      <p>Data is fetched by <code>scripts/fetch-data.mjs</code> and refreshed hourly by a scheduled job. The timestamp at the top of the page is the fetch time. To reproduce any number, call the endpoint above with the same parameters and compare it against the value at that timestamp.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <img class="lockup" src="assets/taskmarket-lockup.png" alt="Taskmarket" width="180" height="39">
+  <p>Made for a paid Taskmarket bounty. This is not an official Taskmarket product.</p>
+  <p><a href="https://taskmarket.dev">taskmarket.dev</a> &middot; Source code under the MIT licence: <a href="https://github.com/ginzbitcoin/taskmarket-visualizer">github.com/ginzbitcoin/taskmarket-visualizer</a>.</p>
+  <p class="fine">Read-only. No wallet connection, no analytics, no tracking, no personal data collected.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

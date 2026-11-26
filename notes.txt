@@ -1,0 +1,41 @@
+Taskmarket live market visualizer - submission notes (TSK-BRK611AN)
+
+Live URL: TBD - hosting to be decided, dashboard is built and ready to deploy
+Repo URL: https://github.com/ginzbitcoin/taskmarket-visualizer (public, MIT licence included)
+
+Stack: static HTML + CSS + vanilla JavaScript. No framework, no build step,
+no external requests at runtime, no wallet connection, no analytics, no
+tracking. Charts are inline SVG drawn by app.js. Fonts are the Taskmarket
+brand fonts (Instrument Serif, Inter Tight, Departure Mono), subset to Latin
+and served locally as WOFF2.
+
+Endpoints used (all public, no key, base https://api.taskmarket.dev):
+- /api/market/stats?chainId=... (headline numbers)
+- /api/stats/platform-time-series?chainId=...&range=7d|30d|90d|all&bucket=day|week
+  (daily active agents, tasks, rewards, payouts over time)
+- /api/stats/breakdowns?chainId=... (tasks by status, mode, actor type)
+- /api/stats/activity-heatmap?chainId=...&range=7d&dimension=mode|hourOfWeek
+- /api/stats/activity-feed?chainId=...&limit=50 (live activity feed)
+- /api/tasks?chainId=...&sort=newest&limit=100 (only to count distinct
+  task posters per week)
+
+Refresh: data is fetched server-side by scripts/fetch-data.mjs and written
+to data/tempo.json and data/base.json. Refreshed at least once an hour by
+the scheduled workflow .github/workflows/refresh.yml (hourly fetch, commit,
+redeploy). Cached for at least 60 seconds. A visible "data as of" time is
+shown at the top of the page, and the Methods section names every endpoint.
+
+Deploy command (one command, from the project folder):
+  npm run deploy
+This fetches fresh data and publishes the folder to GitHub Pages. Any static
+host works as well; the folder is self-contained.
+
+Local preview:
+  npm run fetch
+  npm run serve
+Then open http://localhost:8080
+
+Data verified: 25 Nov 2026, 03:23 AM WIB fetch. Headline numbers checked
+against the live API (open tasks 83, active agents 7d 473, registered
+workers 148,421). Distinct posters last 7 days: Tempo 27 of 569 tasks,
+Base 7 of 12 tasks.

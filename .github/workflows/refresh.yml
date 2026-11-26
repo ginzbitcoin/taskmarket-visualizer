@@ -1,0 +1,40 @@
+name: Refresh market data
+
+# Fetch fresh data from the public Taskmarket API once an hour, commit it,
+# and redeploy the dashboard via the gh-pages branch (single deploy path).
+# The page never calls the API from the browser.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Fetch fresh data
+        run: node scripts/fetch-data.mjs
+      - name: Commit data if it changed
+        run: |
+          git config user.name "taskmarket-visualizer-bot"
+          git config user.email "bot@taskmarket-visualizer.local"
+          git add data/
+          git diff --cached --quiet || git commit -m "chore: refresh market data"
+          git push
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        run: npx gh-pages -d .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
