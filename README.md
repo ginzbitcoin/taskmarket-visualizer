@@ -5,7 +5,7 @@ trends, breakdowns, heatmaps and a live activity feed for Tempo and Base.
 Made for a paid Taskmarket bounty (TSK-BRK611AN). This is not an official
 Taskmarket product.
 
-Live URL: (to be added after hosting is decided, see notes.txt)
+Live URL: https://ginzbitcoin.github.io/taskmarket-visualizer/
 
 ## What it shows
 
