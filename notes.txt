@@ -1,7 +1,7 @@
 Taskmarket live market visualizer - submission notes (TSK-BRK611AN)
 
 Live URL: TBD - hosting to be decided, dashboard is built and ready to deploy
-Repo URL: TBD - public repository to be created at deploy time (MIT licence included)
+Repo URL: https://github.com/ginzbitcoin/taskmarket-visualizer (public, MIT licence included)
 
 Stack: static HTML + CSS + vanilla JavaScript. No framework, no build step,
 no external requests at runtime, no wallet connection, no analytics, no
