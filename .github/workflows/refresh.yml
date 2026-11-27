@@ -19,10 +19,10 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Fetch fresh data
         run: node scripts/fetch-data.mjs
       - name: Commit data if it changed
@@ -35,6 +35,10 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Deploy to GitHub Pages (gh-pages branch)
-        run: npx gh-pages -d .
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # gh-pages 6.x does NOT read GH_TOKEN: it clones and pushes the plain
+        # remote.origin.url verbatim, so the push asks git for a username and
+        # fails ("could not read Username"). Pass the token in the repo URL
+        # via --repo so clone and push are authenticated. Run #3, 27 Nov 2026,
+        # failed exactly this way; the live site still serves the data from
+        # the 26 Nov 10:05 AM WIB manual deploy.
+        run: npx gh-pages -d . --repo "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
